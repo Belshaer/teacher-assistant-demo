@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>body{margin:0}</style>
+<title>Teacher Assistant</title>
+<style>
+  /* Layout: one phone, centred on a quiet desk; on a real phone the app fills the screen. */
+  :root {
+    --desk: #ECEBE6;
+    --ink: #2B2A27;
+    --muted: #6E6B63;
+    --bezel: #141414;
+    --chip: #FFFFFF;
+    --accent: #5F4BDE;
+    --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --desk: #1C1B19; --ink: #EDEBE6; --muted: #A29E94; --bezel: #050505; --chip: #2A2926; --accent: #A99BFF; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --desk: #1C1B19; --ink: #EDEBE6; --muted: #A29E94; --bezel: #050505; --chip: #2A2926; --accent: #A99BFF; color-scheme: dark; }
+
+  html, body { height: 100%; }
+  body { background: var(--desk); color: var(--ink); font-family: var(--font-ui); padding-inline: 16px; box-sizing: border-box; overflow: hidden; }
+
+  .stage { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding-block: 16px; box-sizing: border-box; }
+  .bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; font-size: 13px; color: var(--muted); }
+  .bar b { color: var(--ink); font-weight: 600; letter-spacing: 0.01em; }
+  .reset { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); background: var(--chip); border: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* itel A50: 360 × 806 CSS px, drawn at real size and scaled down to fit shorter windows. */
+  .fit { width: 380px; height: 826px; flex: none; }
+  .phone { width: 380px; height: 826px; box-sizing: border-box; padding: 10px; border-radius: 44px; background: var(--bezel); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.25); transform-origin: top left; }
+  .phone iframe { display: block; width: 360px; height: 806px; border: 0; border-radius: 34px; background: #FFFFFF; }
+
+  @media (max-width: 480px) {
+    body { padding-inline: 0; }
+    .stage { padding-block: 0; gap: 0; }
+    .bar { display: none; }
+    .fit, .phone { width: 100%; height: 100%; }
+    .phone { padding: 0; border-radius: 0; box-shadow: none; background: transparent; transform: none !important; }
+    .phone iframe { width: 100%; height: 100%; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <div class="bar">
+    <span><b>Teacher Assistant</b> · prototype on an itel A50</span>
+    <button class="reset" id="reset" type="button">Start over</button>
+  </div>
+  <div class="fit" id="fit">
+    <div class="phone" id="phone">
+      <iframe id="app" src="app.html" title="Teacher Assistant app"></iframe>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Scale the real-size phone down when the window is too short; never up.
+  var fit = document.getElementById('fit');
+  var phone = document.getElementById('phone');
+  function scale() {
+    if (window.innerWidth <= 480) { fit.style.width = ''; fit.style.height = ''; phone.style.transform = ''; return; }
+    var s = Math.min(1, (window.innerHeight - 80) / 826, (window.innerWidth - 32) / 380);
+    phone.style.transform = 'scale(' + s + ')';
+    fit.style.width = 380 * s + 'px';
+    fit.style.height = 826 * s + 'px';
+  }
+  window.addEventListener('resize', scale);
+  scale();
+
+  // Start over: forget this viewer's progress (lessons taught, insights done) and reload the app.
+  document.getElementById('reset').addEventListener('click', function () {
+    try {
+      Object.keys(localStorage)
+        .filter(function (k) { return k.indexOf('teacher-assistant.') === 0 || k.indexOf('school-app.') === 0; })
+        .forEach(function (k) { localStorage.removeItem(k); });
+      sessionStorage.removeItem('school-app.returnTo');
+    } catch (e) { /* storage unavailable: the reload still starts the app fresh where it can */ }
+    document.getElementById('app').src = 'app.html';
+  });
+</script>
+
+</body>
+</html>
